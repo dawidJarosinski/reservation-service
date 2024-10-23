@@ -23,14 +23,16 @@ public class ReservationService {
     private final ScheduleRepository scheduleRepository;
 
     public List<Reservation> findAllByStatus(String status) {
+        ReservationStatus reservationStatus;
         try {
-            return reservationRepository.findAll()
-                    .stream()
-                    .filter(reservation -> reservation.getStatus() == ReservationStatus.valueOf(status))
-                    .toList();
+            reservationStatus = ReservationStatus.valueOf(status);
         } catch(IllegalArgumentException ex) {
             throw new ReservationException("wrong status");
         }
+        return reservationRepository.findAll()
+                .stream()
+                .filter(reservation -> reservation.getStatus() == reservationStatus)
+                .toList();
     }
 
     public List<Reservation> findAll() {
@@ -88,7 +90,7 @@ public class ReservationService {
 
         reservation.setStatus(ReservationStatus.REJECTED);
 
-        return reservation;
+        return reservationRepository.save(reservation);
     }
     private Reservation returnReservationIfExistsOrException(Long id) {
         return reservationRepository.findById(id).orElseThrow(() -> new ReservationException("reservation not found"));
